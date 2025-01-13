@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import express from 'express'
 import { User, validateUser } from '../model/user.js'
-import { genHash } from '../hash.js'
 import { Product, validateProduct } from '../model/product.js'
 import authMiddleware from '../middleware/authMiddleware.js'
 import 'dotenv/config'
