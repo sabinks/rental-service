@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose"
+import Joi from "joi";
 import JoiObjectId from "joi-objectid";
 const myJoiObjectId = JoiObjectId(Joi);
 const reviewSchema = new Schema({
@@ -7,12 +8,12 @@ const reviewSchema = new Schema({
     rentalId: { type: Schema.Types.ObjectId, ref: 'Rental', required: true },
     rating: { type: Number, required: true },
     comment: { type: String, required: true },
+    publish: { type: Boolean, default: false }
 }, { timestamps: true });
 
 function validateRentalReview(data) {
     const schema = Joi.object({
-        userId: myJoiObjectId().required(),
-        carId: myJoiObjectId().required(),
+        rentalId: myJoiObjectId().required(),
         rating: Joi.number().required(),
         comment: Joi.string().required(),
     })
