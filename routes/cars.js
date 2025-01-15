@@ -13,6 +13,7 @@ router.get('/', async (req, res) => {
         res.status(500).send({ error: 'Failed to fetch cars.' });
     }
 });
+
 router.post('/', [authMiddleware, admin], async (req, res) => {
     const { error } = validateCar(req.body, { abortEarly: false })
     if (error) {
@@ -30,6 +31,7 @@ router.post('/', [authMiddleware, admin], async (req, res) => {
         res.status(400).send({ error: err.message });
     }
 });
+
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -40,6 +42,7 @@ router.get('/:id', async (req, res) => {
         res.status(500).send({ error: 'Failed to update car.' });
     }
 });
+
 router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -50,6 +53,7 @@ router.put('/:id', async (req, res) => {
         res.status(500).send({ error: 'Failed to update car.' });
     }
 });
+
 router.post('/:id/make-available', async (req, res) => {
     try {
         const { id } = req.params;
@@ -60,6 +64,55 @@ router.post('/:id/make-available', async (req, res) => {
         res.status(500).send({ error: 'Failed to update car.' });
     }
 })
+
+router.get('/:id/available-history', [authMiddleware, admin], async (req, res) => {
+    try {
+        const { id } = req.params;
+        const car = await Car.findById(id).select('availabilityHistory');
+        if (!car) {
+            return res.status(404).send('Car not found');
+        }
+        res.send(car);
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to update car.' });
+    }
+})
+
+router.post('/:id/available-history', [authMiddleware, admin], async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, date } = req.body
+        const car = await Car.findById(id);
+        if (!car) {
+            return res.status(404).send('Car not found');
+        }
+        const historyObj = {
+            date: date ? date : (new Date()).toISOString(),
+            status
+        }
+        car.availabilityHistory.push(historyObj)
+        await car.save()
+        res.send('Record updated!');
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to update car.' });
+    }
+})
+
+router.delete('/:id/available-history/:historyId', [authMiddleware, admin], async (req, res) => {
+    try {
+        const { id, historyId } = req.params;
+        const car = await Car.findById(id);
+        if (!car) {
+            return res.status(404).send('Car not found');
+        }
+        car.availabilityHistory.pull({ _id: historyId })
+        await car.save()
+        res.send('Record updated!');
+    } catch (err) {
+        res.status(500).send({ error: 'Failed to update car.' });
+    }
+})
+
 router.post('/:id/reviews', async (req, res) => {
     const { error } = validateReview(req.body, { abortEarly: false })
     if (error) {
