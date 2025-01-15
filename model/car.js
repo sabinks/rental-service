@@ -1,5 +1,7 @@
 import { Schema, model } from "mongoose";
-
+import Joi from 'joi'
+import JoiObjectId from "joi-objectid";
+const myJoiObjectId = JoiObjectId(Joi);
 const carSchema = new Schema({
     make: { type: String, required: true },
     model: { type: String, required: true },
@@ -13,6 +15,8 @@ const carSchema = new Schema({
         rating: { type: Number, min: 1, max: 5 },
         comment: { type: String },
     }],
+    rating: { type: String, default: 0 },
+    numRating: { type: String, default: 0 },
     maintenance: [{
         date: { type: Date },
         details: { type: String },
@@ -30,7 +34,7 @@ const carSchema = new Schema({
     isAvailable: { type: Boolean, default: true },
 }, { timestamps: true });
 
-function validateCar(user) {
+function validateCar(data) {
     const schema = Joi.object({
         make: Joi.string().required(),
         model: Joi.string().required(),
@@ -40,8 +44,16 @@ function validateCar(user) {
         pricePerDay: Joi.number().required(),
         features: Joi.string().required(),
     })
-    return schema.validate(user, { abortEarly: false })
+    return schema.validate(data, { abortEarly: false })
+}
+function validateRating(data) {
+    const schema = Joi.object({
+        carId: myJoiObjectId().required(),
+        rating: Joi.number().required(),
+        comment: Joi.string().required(),
+    })
+    return schema.validate(data, { abortEarly: false })
 }
 const Car = model('Car', carSchema)
 
-export { Car, carSchema, validateCar }
+export { Car, carSchema, validateCar, validateRating }

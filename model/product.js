@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import jwt from 'jsonwebtoken'
 import Joi from 'joi'
+import JoiObjectId from "joi-objectid";
+const myJoiObjectId = JoiObjectId(Joi);
 import passwordComplexity from 'joi-password-complexity'
 const reviewSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -53,9 +55,9 @@ function validateProduct(product) {
 
 function validateReview(product) {
     const schema = Joi.object({
+        carId: myJoiObjectId().required(),
         rating: Joi.number().required(),
         comment: Joi.string().required(),
-        productId: Joi.string().required()
     })
     return schema.validate(product, { abortEarly: false })
 }

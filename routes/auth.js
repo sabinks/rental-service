@@ -28,7 +28,7 @@ router.post('/login', async (req, res) => {
         return res.status(400).send('Invalid email or password')
     }
     const token = userExists.generateAuthToken()
-    res.send({ access_token: token })
+    res.send({ access_token: token, _id: userExists._id })
 })
 
 router.post('/logout', auth, async (req, res) => {
