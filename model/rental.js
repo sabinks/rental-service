@@ -1,4 +1,7 @@
-const { Schema, model } = require("mongoose");
+import Joi from "joi";
+import JoiObjectId from "joi-objectid";
+const myJoiObjectId = JoiObjectId(Joi);
+import { Schema, model } from 'mongoose'
 
 const rentalSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -18,6 +21,16 @@ const rentalSchema = new Schema({
     finalCost: { type: Number, required: true },
     status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
 }, { timestamps: true });
+
+function validateRental(data) {
+    const schema = Joi.object({
+        carId: myJoiObjectId().required(),
+        rentalStart: Joi.string().required(),
+        rentalEnd: Joi.string().required(),
+    })
+    return schema.validate(data, { abortEarly: false })
+}
+
 const Rental = model('Rental', rentalSchema)
 
-export { Rental, rentalSchema }
+export { Rental, rentalSchema, validateRental }
