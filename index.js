@@ -7,6 +7,7 @@ import ratings from './routes/ratings.js'
 import maintenances from './routes/maintenances.js'
 import auth from './routes/auth.js'
 import cars from './routes/cars.js'
+import stripe from './routes/stripe.js'
 import general from './routes/general.js'
 import authMiddleware from './middleware/authMiddleware.js'
 const port = process.env.PORT
@@ -25,6 +26,7 @@ app.use('/api/ratings', ratings)
 app.use('/api/maintenances', maintenances)
 app.use('/api/cars', cars)
 app.use('/api', general)
+app.use('/api/stripe', stripe)
 
 
 app.listen(port, () => {
