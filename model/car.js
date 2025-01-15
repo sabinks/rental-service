@@ -54,6 +54,15 @@ function validateRating(data) {
     })
     return schema.validate(data, { abortEarly: false })
 }
+function validateMaintenance(data) {
+    const schema = Joi.object({
+        carId: myJoiObjectId().required(),
+        date: Joi.string().required(),
+        details: Joi.string().required(),
+        cost: Joi.number().required(),
+    })
+    return schema.validate(data, { abortEarly: false })
+}
 const Car = model('Car', carSchema)
 
-export { Car, carSchema, validateCar, validateRating }
+export { Car, carSchema, validateCar, validateRating, validateMaintenance }

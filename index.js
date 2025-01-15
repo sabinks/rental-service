@@ -4,6 +4,7 @@ import connectDB from './config/db.js'
 import users from './routes/users.js'
 import products from './routes/products.js'
 import ratings from './routes/ratings.js'
+import maintenances from './routes/maintenances.js'
 import auth from './routes/auth.js'
 import cars from './routes/cars.js'
 import general from './routes/general.js'
@@ -21,6 +22,7 @@ app.use('/api/auth', auth)
 app.use('/api/users', users)
 app.use('/api/products', products)
 app.use('/api/ratings', ratings)
+app.use('/api/maintenances', maintenances)
 app.use('/api/cars', cars)
 app.use('/api', general)
 
