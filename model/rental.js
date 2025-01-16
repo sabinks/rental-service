@@ -5,6 +5,7 @@ import { Schema, model } from 'mongoose'
 
 const rentalSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    paymentId: { type: Schema.Types.ObjectId, ref: 'Payment', required: false },
     carId: { type: Schema.Types.ObjectId, ref: 'Car', required: true },
     rentalStart: { type: Date, required: true },
     rentalEnd: { type: Date, required: true },

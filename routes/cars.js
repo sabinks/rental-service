@@ -4,7 +4,41 @@ import { Car, validateCar } from "../model/car.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import admin from '../middleware/admin.js';
 import { validateReview } from '../model/product.js';
+import multer from 'multer';
+import fs from 'fs'
+import formidable, { errors as formidableErrors } from 'formidable';
+if (!fs.existsSync('./uploads')) {
+    fs.mkdirSync('./uploads');
+}
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, uniqueSuffix + file.originalname)
+    }
+})
 
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 2000000 }, // Limit file size to 2MB
+    fileFilter: function (req, file, cb) {
+        checkFileType(file, cb);
+    }
+}).single('image');
+
+function checkFileType(file, cb) {
+    const filetypes = /jpeg|jpg|png|gif/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+        return cb(null, true);
+    } else {
+        cb('Error: Images Only!');
+    }
+}
 router.get('/', async (req, res) => {
     try {
         const cars = await Car.find({ isAvailable: true });
@@ -15,7 +49,13 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', [authMiddleware, admin], async (req, res) => {
-    const { error } = validateCar(req.body, { abortEarly: false })
+    const form = formidable({
+    });
+    let fields;
+    let files;
+    [fields, files] = await form.parse(req);
+    const newFields = fields?.map(field => field[0])
+    const { error } = validateCar(newFields, { abortEarly: false })
     if (error) {
         const errors = error.details.map(err => ({
             message: err.message,
@@ -24,8 +64,29 @@ router.post('/', [authMiddleware, admin], async (req, res) => {
         return res.status(422).send(errors)
     }
     try {
-        const car = new Car(req.body);
+        const car = new Car(newFields);
         await car.save();
+        // upload(req, res, async (err) => {
+        //     if (err) {
+        //         res.send(err);
+        //     } else {
+        //         if (req.file == undefined) {
+        //             res.send('No file selected!');
+        //         } else {
+        //             car.imageUrl = 'uploads/' + req.file.filename,
+        //                 await car.save()
+        //         }
+        //     }
+        // });
+        // return res.send(files);
+        const tempPath = files[0].filepath;
+        const targetPath = path.join(__dirname, "./uploads/" + files[0].originalFilename);
+
+        fs.rename(tempPath, targetPath, async err => {
+            car.imageUrl = targetPath
+            await car.save()
+        });
+
         res.status(201).send(car);
     } catch (err) {
         res.status(400).send({ error: err.message });

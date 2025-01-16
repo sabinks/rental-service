@@ -26,6 +26,7 @@ const carSchema = new Schema({
         date: { type: Date },
         status: { type: String, enum: ['rented', 'available', 'maintenance'] },
     }],
+    imageUrl: { type: String },
     currentLocation: {
         lat: { type: Number },
         lng: { type: Number },

@@ -1,15 +1,13 @@
-import mongoose from "mongoose";
-import jwt from 'jsonwebtoken'
+import { Schema, model } from "mongoose";
 import Joi from 'joi'
 import JoiObjectId from "joi-objectid";
 const myJoiObjectId = JoiObjectId(Joi);
-import passwordComplexity from 'joi-password-complexity'
-const reviewSchema = new mongoose.Schema({
+const reviewSchema = new Schema({
     name: { type: String, required: true },
     rating: { type: Number, required: true },
     comment: { type: String, required: true },
     user: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         required: true,
         ref: 'User'
     }
@@ -18,10 +16,10 @@ const reviewSchema = new mongoose.Schema({
         timestamps: true
     }
 )
-const productSchema = new mongoose.Schema(
+const productSchema = new Schema(
     {
         user: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: Schema.Types.ObjectId,
             require: true,
             ref: 'User'
         },
@@ -61,5 +59,5 @@ function validateReview(product) {
     })
     return schema.validate(product, { abortEarly: false })
 }
-const Product = mongoose.model('Product', productSchema)
+const Product = model('Product', productSchema)
 export { Product, productSchema, validateProduct, validateReview }

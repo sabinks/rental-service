@@ -5,15 +5,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+     "start": "TZ='America/Toronto' nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
     "config": "^3.3.12",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "formidable": "^3.5.2",
     "helmet": "^8.0.0",
     "joi": "^17.13.3",
     "joi-objectid": "^4.0.2",

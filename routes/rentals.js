@@ -9,9 +9,9 @@ router.get('/', [authMiddleware], async (req, res) => {
         const { _id, name, role } = req.user
         let rentals = []
         if (role == 'customer') {
-            rentals = await Rental.find({ userId: _id }).populate('carId')
+            rentals = await Rental.find({ userId: _id }).populate('carId paymentId')
         } else {
-            rentals = await Rental.find({}).populate('carId')
+            rentals = await Rental.find({}).populate('carId paymentId')
         }
         res.status(201).send(rentals);
     } catch (err) {

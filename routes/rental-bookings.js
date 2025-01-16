@@ -3,6 +3,7 @@ const router = express.Router()
 import { Car } from "../model/car.js";
 import { Rental, validateRental } from "../model/rental.js";
 import authMiddleware from '../middleware/authMiddleware.js';
+import { Payment } from '../model/payment.js';
 
 router.post('', authMiddleware, async (req, res) => {
     const { error } = validateRental(req.body, { abortEarly: false })
@@ -37,6 +38,17 @@ router.post('', authMiddleware, async (req, res) => {
         car.isAvailable = false;
         await car.save();
 
+        const payment = new Payment({
+            userId: req.user._id,
+            rentalId: rental._id,
+            stripePaymentId: "",
+            amount: baseCost,
+            status: "pending",
+        })
+        await payment.save()
+
+        rental.paymentId = payment._id
+        await rental.save()
         res.status(201).send(rental);
     } catch (err) {
         console.log(err);
