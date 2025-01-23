@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import Joi from 'joi'
 import JoiObjectId from "joi-objectid";
 const myJoiObjectId = JoiObjectId(Joi);
+import config from 'config'
 import passwordComplexity from 'joi-password-complexity'
 
 const userSchema = new Schema({
@@ -96,7 +97,7 @@ function validateLogin(user) {
 }
 
 userSchema.methods.generateAuthToken = function () {
-    const key = process.env.SALT
+    const key = config.get('jwtPrivateKey')
     return jwt.sign({ _id: this._id, name: this.name, role: this.role }, key)
 }
 

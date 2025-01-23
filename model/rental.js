@@ -10,7 +10,7 @@ const rentalSchema = new Schema({
     rentalStart: { type: Date, required: true },
     rentalEnd: { type: Date, required: true },
     totalDays: { type: Number },
-    baseCost: { type: Number, required: true },
+    baseCost: { type: Number },
     discount: {
         code: { type: String },
         amount: { type: Number, default: 0 },
@@ -19,8 +19,8 @@ const rentalSchema = new Schema({
         type: { type: String },
         cost: { type: Number },
     }],
-    finalCost: { type: Number, required: true },
-    status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending' },
+    finalCost: { type: Number },
+    status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled', 'returned'], default: 'pending' },
 }, { timestamps: true });
 
 function validateRental(data) {

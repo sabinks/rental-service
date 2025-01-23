@@ -12,16 +12,17 @@ router.post('', authMiddleware, async (req, res) => {
             message: err.message,
             key: err.context.key
         }))
+
         return res.status(422).send(errors)
     }
     try {
         const { carId, rentalStart, rentalEnd } = req.body;
-        const car = await Car.findById(carId);
+        const car = await Car.findOne({ _id: carId, isAvailable: true });
         if (!car || !car.isAvailable) {
+
             return res.status(400).send({ error: 'Car is not available.' });
         }
         const totalDays = Math.ceil((new Date(rentalEnd) - new Date(rentalStart)) / (1000 * 60 * 60 * 24));
-        console.log(totalDays);
 
         const baseCost = totalDays * car.pricePerDay;
         const rental = new Rental({

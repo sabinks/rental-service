@@ -1,5 +1,5 @@
 import express from 'express'
-import 'dotenv/config'
+import config from 'config'
 import connectDB from './config/db.js'
 import users from './routes/users.js'
 import products from './routes/products.js'
@@ -14,6 +14,11 @@ import cars from './routes/cars.js'
 import stripe from './routes/stripe.js'
 import general from './routes/general.js'
 import authMiddleware from './middleware/authMiddleware.js'
+if (!config.get('jwtPrivateKey')) {
+    console.log('Fatal Error: jwtPrivateKey is not defined.');
+    process.exit(1)
+}
+
 const port = process.env.PORT
 connectDB()
 
@@ -39,3 +44,4 @@ app.use('/api/stripe', stripe)
 app.listen(port, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
 })
+export default app
