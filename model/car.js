@@ -2,10 +2,11 @@ import { Schema, model } from "mongoose";
 import Joi from 'joi'
 import JoiObjectId from "joi-objectid";
 const myJoiObjectId = JoiObjectId(Joi);
+
 const carSchema = new Schema({
-    make: { type: String, required: true },
+    make: { type: String, required: true, },
     model: { type: String, required: true },
-    year: { type: Number, required: true },
+    year: { type: String, required: true, },
     licensePlate: { type: String, unique: true, required: true },
     category: { type: String, enum: ['SUV', 'Sedan', 'Truck'], required: true },
     pricePerDay: { type: Number, required: true },
@@ -39,11 +40,11 @@ function validateCar(data) {
     const schema = Joi.object({
         make: Joi.string().required(),
         model: Joi.string().required(),
-        year: Joi.number().required(),
+        year: Joi.string().required(),
         licensePlate: Joi.string().required(),
         category: Joi.string().required(),
         pricePerDay: Joi.number().required(),
-        features: Joi.string().required(),
+        features: Joi.array().items(Joi.string())
     })
     return schema.validate(data, { abortEarly: false })
 }

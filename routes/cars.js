@@ -7,6 +7,9 @@ import { validateReview } from '../model/product.js';
 import multer from 'multer';
 import fs from 'fs'
 import formidable, { errors as formidableErrors } from 'formidable';
+import validateObjectID from '../middleware/validateObjectId.js';
+import { log } from 'console';
+import validate from '../middleware/validate.js';
 if (!fs.existsSync('./uploads')) {
     fs.mkdirSync('./uploads');
 }
@@ -42,7 +45,10 @@ function checkFileType(file, cb) {
 router.get('/', async (req, res) => {
     try {
         const cars = await Car.find({ isAvailable: true });
-        res.send(cars);
+        if (!cars) {
+            return res.status(404).send('No record found!')
+        }
+        res.status(200).send(cars);
     } catch (err) {
         res.status(500).send({ error: 'Failed to fetch cars.' });
     }
@@ -53,9 +59,17 @@ router.post('/', [authMiddleware, admin], async (req, res) => {
     });
     let fields;
     let files;
+
     [fields, files] = await form.parse(req);
-    const newFields = fields?.map(field => field[0])
-    const { error } = validateCar(newFields, { abortEarly: false })
+    let data = {}
+    for (const key in fields) {
+        if (key !== 'features') {
+            data[key] = fields[key][0]
+        } else {
+            data[key] = fields[key]
+        }
+    }
+    const { error } = validateCar(data, { abortEarly: false })
     if (error) {
         const errors = error.details.map(err => ({
             message: err.message,
@@ -64,7 +78,7 @@ router.post('/', [authMiddleware, admin], async (req, res) => {
         return res.status(422).send(errors)
     }
     try {
-        const car = new Car(newFields);
+        const car = new Car(data);
         await car.save();
         // upload(req, res, async (err) => {
         //     if (err) {
@@ -79,32 +93,36 @@ router.post('/', [authMiddleware, admin], async (req, res) => {
         //     }
         // });
         // return res.send(files);
-        const tempPath = files[0].filepath;
-        const targetPath = path.join(__dirname, "./uploads/" + files[0].originalFilename);
+        // const tempPath = files[0].filepath;
+        // const targetPath = path.join(__dirname, "./uploads/" + files[0].originalFilename);
 
-        fs.rename(tempPath, targetPath, async err => {
-            car.imageUrl = targetPath
-            await car.save()
-        });
+        // fs.rename(tempPath, targetPath, async err => {
+        //     car.imageUrl = targetPath
+        //     await car.save()
+        // });
 
         res.status(201).send(car);
     } catch (err) {
+        console.log(err);
+
         res.status(400).send({ error: err.message });
     }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateObjectID, async (req, res) => {
     try {
         const { id } = req.params;
         const carExists = await Car.findById(id);
-        if (!carExists) return res.status(404).send({ error: 'Record not found.' });
-        res.send(carExists);
+        if (!carExists) {
+            return res.status(404).send({ error: 'Record not found.' });
+        }
+        res.send(carExists).status(200);
     } catch (err) {
         res.status(500).send({ error: 'Failed to update car.' });
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateObjectID, async (req, res) => {
     try {
         const { id } = req.params;
         const updatedCar = await Car.findByIdAndUpdate(id, req.body, { new: true });
@@ -115,7 +133,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.post('/:id/make-available', async (req, res) => {
+router.post('/:id/make-available', validateObjectID, async (req, res) => {
     try {
         const { id } = req.params;
         const updatedCar = await Car.findByIdAndUpdate(id, req.body, { new: true });
@@ -126,7 +144,7 @@ router.post('/:id/make-available', async (req, res) => {
     }
 })
 
-router.get('/:id/available-history', [authMiddleware, admin], async (req, res) => {
+router.get('/:id/available-history', [authMiddleware, validateObjectID, admin], async (req, res) => {
     try {
         const { id } = req.params;
         const car = await Car.findById(id).select('availabilityHistory');
@@ -139,7 +157,7 @@ router.get('/:id/available-history', [authMiddleware, admin], async (req, res) =
     }
 })
 
-router.post('/:id/available-history', [authMiddleware, admin], async (req, res) => {
+router.post('/:id/available-history', [authMiddleware, validateObjectID, admin], async (req, res) => {
     try {
         const { id } = req.params;
         const { status, date } = req.body
@@ -159,7 +177,7 @@ router.post('/:id/available-history', [authMiddleware, admin], async (req, res) 
     }
 })
 
-router.delete('/:id/available-history/:historyId', [authMiddleware, admin], async (req, res) => {
+router.delete('/:id/available-history/:historyId', [authMiddleware, validateObjectID, admin], async (req, res) => {
     try {
         const { id, historyId } = req.params;
         const car = await Car.findById(id);
@@ -174,7 +192,7 @@ router.delete('/:id/available-history/:historyId', [authMiddleware, admin], asyn
     }
 })
 
-router.post('/:id/reviews', async (req, res) => {
+router.post('/:id/reviews', validateObjectID, async (req, res) => {
     const { error } = validateReview(req.body, { abortEarly: false })
     if (error) {
         const errors = error.details.map(err => ({

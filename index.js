@@ -14,6 +14,8 @@ import cars from './routes/cars.js'
 import stripe from './routes/stripe.js'
 import general from './routes/general.js'
 import authMiddleware from './middleware/authMiddleware.js'
+import errorMiddleware from './error.js'
+import validateObjectID from './middleware/validateObjectId.js'
 if (!config.get('jwtPrivateKey')) {
     console.log('Fatal Error: jwtPrivateKey is not defined.');
     process.exit(1)
@@ -39,9 +41,10 @@ app.use('/api/maintenances', maintenances)
 app.use('/api/cars', cars)
 app.use('/api', general)
 app.use('/api/stripe', stripe)
+app.use(validateObjectID)
+app.use(errorMiddleware)
 
-
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
 })
-export default app
+export default server
