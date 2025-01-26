@@ -1,0 +1,1 @@
+export express_jwtPrivateKey="ilovethissecretpasswordverymuch"
