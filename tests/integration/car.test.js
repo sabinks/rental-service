@@ -86,7 +86,7 @@ describe('cars api', () => {
                 licensePlate: 'random3',
                 category: 'Sedan',
                 pricePerDay: 20,
-                feature: 'perfect in condition'
+                features: ['perfect in condition', 'feature one']
             }
             for (const key in data) {
                 formData.append(key, data[key])

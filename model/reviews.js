@@ -19,7 +19,9 @@ function validateRentalReview(data) {
     })
     return schema.validate(data, { abortEarly: false })
 }
-
+reviewSchema.static('isReviewed', function (rentalId, userId) {
+    return this.findOne({ rentalId, userId })
+})
 const Review = model('Review', reviewSchema)
 
 export { Review, reviewSchema, validateRentalReview }

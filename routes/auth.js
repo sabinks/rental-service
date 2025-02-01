@@ -1,7 +1,7 @@
 import express from 'express'
 import { User, validateLogin } from '../model/user.js'
-import { comparePassword } from '../../express-demo/hash.js'
 import auth from '../middleware/authMiddleware.js'
+import { comparePassword } from '../utils.js'
 const router = express.Router()
 
 router.get('/me', auth, async (req, res) => {

@@ -118,6 +118,7 @@ describe('rental review', () => {
         //authorised customer user can delete reiew if not published
         //admin can delete review
         let review;
+
         beforeEach(async () => {
             token = new User(user).generateAuthToken()
             car = await Car.findOne({ isAvailable: true })

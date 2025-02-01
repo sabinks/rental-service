@@ -1,47 +1,43 @@
 import express from 'express'
-const router = express.Router()
+import path, { dirname } from 'path'
+import multer from 'multer';
+import fs from 'fs'
 import { Car, validateCar } from "../model/car.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import admin from '../middleware/admin.js';
 import { validateReview } from '../model/product.js';
-import multer from 'multer';
-import fs from 'fs'
-import formidable, { errors as formidableErrors } from 'formidable';
 import validateObjectID from '../middleware/validateObjectId.js';
-import { log } from 'console';
+const router = express.Router()
+
 import validate from '../middleware/validate.js';
 if (!fs.existsSync('./uploads')) {
     fs.mkdirSync('./uploads');
 }
+const __dirname = dirname("./index.js")
+
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/')
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, uniqueSuffix + file.originalname)
+    destination: path.join(__dirname, "uploads"),
+    filename: (req, file, cb) => {
+        const filename = Date.now() + path.extname(file.originalname)
+        cb(null, filename)
     }
 })
+const allowedFileType = ['image/jpeg', 'image/png', 'image/jpg']
+
+const fileFilter = (req, file, cb) => {
+    if (!allowedFileType.includes(file.mimetype)) {
+        return cb(new Error("Invalid file type. Only JPEG, PNG, JPG allowed"))
+    }
+    cb(null, true)
+}
+const maxFileSize = 2 * 1024 * 1024
 
 const upload = multer({
-    storage: storage,
-    limits: { fileSize: 2000000 }, // Limit file size to 2MB
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
-    }
-}).single('image');
+    storage, fileFilter, limits: { fileSize: maxFileSize }
+})
 
-function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png|gif/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
+const uploadHandle = upload.array('images', 4)
 
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb('Error: Images Only!');
-    }
-}
 router.get('/', async (req, res) => {
     try {
         const cars = await Car.find({ isAvailable: true });
@@ -55,58 +51,41 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', [authMiddleware, admin], async (req, res) => {
-    const form = formidable({
-    });
-    let fields;
-    let files;
-
-    [fields, files] = await form.parse(req);
-    let data = {}
-    for (const key in fields) {
-        if (key !== 'features') {
-            data[key] = fields[key][0]
-        } else {
-            data[key] = fields[key]
+    uploadHandle(req, res, async (err) => {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).send('No files uploaded')
         }
-    }
-    const { error } = validateCar(data, { abortEarly: false })
-    if (error) {
-        const errors = error.details.map(err => ({
-            message: err.message,
-            key: err.context.key
-        }))
-        return res.status(422).send(errors)
-    }
-    try {
-        const car = new Car(data);
+        if (err) {
+            return res.status(500).send('File upload failed')
+        }
+        const { error } = validateCar(req.body)
+        if (error) {
+            const errors = error.details.map(err => ({
+                message: err.message,
+                key: err.context.key
+            }))
+            if (req.files || req.files.length !== 0) {
+                req.files.forEach(file => {
+                    fs.unlink('../uploads/' + file.filename)
+                })
+            }
+            return res.status(422).send(errors)
+        }
+        const { model, make, year, licensePlate, category, pricePerDay, features, description } = req.body
+        let carExists = await Car.findOne({ licensePlate })
+        if (carExists) {
+            return res.status(400).send('Car already exists!')
+        }
+
+        let car = new Car({ model, make, year, licensePlate, category, pricePerDay, features, description });
+
         await car.save();
-        // upload(req, res, async (err) => {
-        //     if (err) {
-        //         res.send(err);
-        //     } else {
-        //         if (req.file == undefined) {
-        //             res.send('No file selected!');
-        //         } else {
-        //             car.imageUrl = 'uploads/' + req.file.filename,
-        //                 await car.save()
-        //         }
-        //     }
-        // });
-        // return res.send(files);
-        // const tempPath = files[0].filepath;
-        // const targetPath = path.join(__dirname, "./uploads/" + files[0].originalFilename);
-
-        // fs.rename(tempPath, targetPath, async err => {
-        //     car.imageUrl = targetPath
-        //     await car.save()
-        // });
-
-        res.status(201).send(car);
-    } catch (err) {
-        console.log(err);
-
-        res.status(400).send({ error: err.message });
-    }
+        req.files.forEach(file => {
+            car.images.push('/uploads/' + file.filename)
+        })
+        await car.save()
+        res.status(201).send('Car created!')
+    })
 });
 
 router.get('/:id', validateObjectID, async (req, res) => {

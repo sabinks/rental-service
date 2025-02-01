@@ -1,4 +1,5 @@
 import express from 'express'
+import path, { dirname } from 'path'
 import config from 'config'
 import connectDB from './config/db.js'
 import users from './routes/users.js'
@@ -16,6 +17,7 @@ import general from './routes/general.js'
 import authMiddleware from './middleware/authMiddleware.js'
 import errorMiddleware from './error.js'
 import validateObjectID from './middleware/validateObjectId.js'
+import prodFunction from './prod.js'
 if (!config.get('jwtPrivateKey')) {
     console.log('Fatal Error: jwtPrivateKey is not defined.');
     process.exit(1)
@@ -28,6 +30,8 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 // app.use(authMiddleware)
+const __dirname = dirname('./index.js')
+app.use('/public/uploads', express.static(path.join(__dirname, 'uploads')))
 
 app.use('/api/auth', auth)
 app.use('/api/users', users)
@@ -43,7 +47,7 @@ app.use('/api', general)
 app.use('/api/stripe', stripe)
 app.use(validateObjectID)
 app.use(errorMiddleware)
-
+app.use(prodFunction)
 const server = app.listen(port, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
 })

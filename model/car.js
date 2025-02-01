@@ -27,7 +27,7 @@ const carSchema = new Schema({
         date: { type: Date },
         status: { type: String, enum: ['rented', 'available', 'maintenance'] },
     }],
-    imageUrl: { type: String },
+    images: [{ type: String }],
     currentLocation: {
         lat: { type: Number },
         lng: { type: Number },
@@ -65,6 +65,7 @@ function validateMaintenance(data) {
     })
     return schema.validate(data, { abortEarly: false })
 }
+
 const Car = model('Car', carSchema)
 
 export { Car, carSchema, validateCar, validateRating, validateMaintenance }

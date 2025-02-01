@@ -26,7 +26,7 @@ router.post('/', [authMiddleware, validate(validateRentalReview)], async (req, r
     if (rental.userId.toString() !== req.user._id.toString() && req.user.role == 'customer') {
         return res.status(403).send('Access Denied!')
     }
-    const reviewExists = await Review.findOne({ userId: req.user._id, rentalId })
+    const reviewExists = await Review.isReviewed(rentalId, req.user._id)
     if (reviewExists) {
         return res.status(400).send('Review already added!')
     }
