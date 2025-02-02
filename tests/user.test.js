@@ -8,7 +8,7 @@ describe("user.generateAuthToken", () => {
         const payload = { _id: new mongoose.Types.ObjectId().toHexString(), role: 'customer' }
         const user = new User(payload);
         const token = user.generateAuthToken()
-        const decoded = jwt.verify(token, config.get('jwtPrivateKey'))
+        const decoded = jwt.verify(token, config.get('jwtPrivateKey') || process.env.JWT_SECRET)
 
         expect(decoded).toMatchObject(payload)
     });

@@ -97,7 +97,7 @@ function validateLogin(user) {
 }
 
 userSchema.methods.generateAuthToken = function () {
-    const key = config.get('jwtPrivateKey')
+    const key = config.get('jwtPrivateKey') || process.env.JWT_SECRET
     return jwt.sign({ _id: this._id, name: this.name, role: this.role }, key)
 }
 

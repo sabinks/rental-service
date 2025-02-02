@@ -6,7 +6,7 @@ export default function authMiddleware(req, res, next) {
         return res.status(401).send('Access denied. No token provided')
     }
     try {
-        const key = config.get('jwtPrivateKey')
+        const key = config.get('jwtPrivateKey') || process.env.JWT_SECRET
         const decoded = jwt.verify(token, key)
         req.user = decoded
         next()

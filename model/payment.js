@@ -15,6 +15,7 @@ const paymentSchema = new Schema({
         reason: { type: String },
         initiatedAt: { type: Date },
     },
+    createdAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 function validateRentalPayment(data) {
     const schema = Joi.object({
