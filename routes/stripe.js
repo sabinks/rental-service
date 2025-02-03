@@ -1,13 +1,13 @@
 import express from 'express'
-import authMiddleware from '../middleware/authMiddleware.js';
-const router = express.Router()
 import Stripe from "stripe";
+import authMiddleware from '../middleware/authMiddleware.js';
 import { sendPaymentRequest } from '../producer.js'
+
+const router = express.Router()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2023-10-16",
     typescript: false,
 });
-
 router.post('/create-payment-intent', authMiddleware, async (req, res) => {
     try {
         const { amount, currency } = req.body;
@@ -36,25 +36,4 @@ router.post('/create-confirm-intent', async (req, res) => {
     await sendPaymentRequest({ confirmationTokenId, paymentId });
     res.status(200).send('Payment request sent');
 });
-router.post("/api/webhooks/stripe", express.raw({ type: "application/json" }), async (req, res) => {
-    const sig = req.headers["stripe-signature"];
-
-    try {
-        const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-
-        if (event.type === "payment_intent.succeeded") {
-            console.log("✅ Payment Succeeded:", event.data.object.id);
-            await Payment.findOneAndUpdate(
-                { paymentIntentId: event.data.object.id },
-                { status: "completed" }
-            );
-        }
-
-        res.status(200).send();
-    } catch (err) {
-        console.error("Webhook Error:", err);
-        res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-});
-
 export default router

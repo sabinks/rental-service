@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer'
 import 'dotenv/config'
 
-const transporter = nodemailer.createTransport({
+export const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: 587,
     secure: false, // true for port 465, false for other ports
@@ -13,13 +13,14 @@ const transporter = nodemailer.createTransport({
 
 // async..await is not allowed in global scope, must use a wrapper
 async function sendMail(data) {
-    const { subject, html, email } = data
+    const { subject, html, email, attachments } = data
     // send mail with defined transport object
     const info = await transporter.sendMail({
         from: '"Rental Service 👻" <info@rental-service.com>', // sender address
         to: email, // list of receivers
         subject: subject ? subject : "Rental Service Mail", // Subject line
-        html: html, // html body
+        html: html, // html body, 
+        attachments: attachments
     });
 
     console.log("Message sent: %s", info.messageId);

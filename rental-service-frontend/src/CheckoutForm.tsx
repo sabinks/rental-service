@@ -64,13 +64,10 @@ export default function CheckoutForm({ amount, currency }: { amount: string, cur
             amount: amount,
             currency: currency,
             confirmationTokenId: confirmationToken.id,
-            paymentId: '679fa189105799f4a88a6396'
+            paymentId: '679fd4a684501cb85732739b'
         })
-
-        console.log(res);
         handleServerResponse(res)
 
-        // Handle any next actions or errors. See the Handle any next actions step for implementation.
     };
 
 

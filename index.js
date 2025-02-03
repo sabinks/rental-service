@@ -13,6 +13,7 @@ import maintenances from './routes/maintenances.js'
 import auth from './routes/auth.js'
 import cars from './routes/cars.js'
 import stripe from './routes/stripe.js'
+import webhooks from './routes/webhooks.js'
 import general from './routes/general.js'
 import authMiddleware from './middleware/authMiddleware.js'
 import errorMiddleware from './error.js'
@@ -24,17 +25,17 @@ if (process.env.NODE_ENV == 'test' && !config.get('jwtPrivateKey')) {
     process.exit(1)
 }
 
+connectDB()
+const app = express()
 const corsOptions = {
     origin: 'http://localhost:5173', // Match your frontend's address
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify the allowed HTTP methods
 };
-connectDB()
-const app = express()
-const port = process.env.PORT
+app.use('/api/stripe/webhooks', webhooks)
+app.use(cors(corsOptions));
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(cors(corsOptions));
 // app.use(authMiddleware)
 const __dirname = dirname('./index.js')
 app.use('/public/uploads', express.static(path.join(__dirname, 'uploads')))
@@ -54,6 +55,7 @@ app.use('/api/stripe', stripe)
 app.use(validateObjectID)
 app.use(errorMiddleware)
 
+const port = process.env.PORT
 const server = app.listen(port, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
 })

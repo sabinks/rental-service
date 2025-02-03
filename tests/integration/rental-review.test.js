@@ -77,7 +77,6 @@ describe('rental review', () => {
         });
         it('should return 400 if rental is reviewed', async () => {
             const review = await Review.findOne({ rentalId, userId: user._id })
-            console.log(review);
 
             if (!review) {
                 const review = new Review({

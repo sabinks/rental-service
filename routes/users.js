@@ -121,9 +121,6 @@ router.post('/profile', authMiddleware, async (req, res) => {
     }
     const { name: newName, phone, address: { street, city, state, zip }, preferences: { preferredCarTypes, notificationEnabled } } = req.body
     const { _id, name } = req.user
-    console.log(preferredCarTypes);
-    console.log(typeof preferredCarTypes);
-
     const user = await User.findOne({ _id, name })
     user.name = newName
     user.phone = phone
