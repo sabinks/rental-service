@@ -12,6 +12,7 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     phone: { type: String },
     role: { type: String, enum: ['customer', 'admin', 'staff'], default: 'customer' },
+    customerId: { type: String },
     address: {
         street: String,
         city: String,

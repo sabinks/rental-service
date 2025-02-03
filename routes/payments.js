@@ -1,11 +1,11 @@
 import express from 'express'
-import Stripe from 'stripe';
 const router = express.Router()
 
 import 'dotenv/config'
 import { Payment, validateRentalPayment } from '../model/payment.js';
 import authMiddleware from '../middleware/authMiddleware.js';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import { User } from '../model/user.js';
+import { stripe } from './stripe.js';
 
 router.get('/', [authMiddleware], async (req, res) => {
     const payments = await Payment.find().populate('userId rentalId')
@@ -25,10 +25,17 @@ router.post('/', [authMiddleware], async (req, res) => {
         const { rentalId, paymentId, stripePaymentId, amount, currency, status } = req.body;
 
         const payment = await Payment.updateOne({ rentalId, _id: paymentId, userId: req.user._id }, {
-
             stripePaymentId, amount, currency, status
         })
-        // await payment.save()
+        let user = await User.findOne(req.user._id)
+        if (!user.customerId) {
+            const { name, email } = user
+            const customer = stripe.customers.create({
+                name, email
+            })
+            user.customerId = customer.id
+            await user.save()
+        }
 
         res.send('Payment successed!');
     } catch (err) {
