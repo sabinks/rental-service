@@ -1,6 +1,6 @@
 import express from 'express'
 const router = express.Router()
-import { Car } from "../model/car.js";
+import { Vehicle } from "../model/vehicle.js";
 import { Rental, validateRental } from "../model/rental.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import { Payment } from '../model/payment.js';
@@ -16,18 +16,18 @@ router.post('', authMiddleware, async (req, res) => {
         return res.status(422).send(errors)
     }
     try {
-        const { carId, rentalStart, rentalEnd } = req.body;
-        const car = await Car.findOne({ _id: carId, isAvailable: true });
-        if (!car || !car.isAvailable) {
+        const { vehicleId, rentalStart, rentalEnd } = req.body;
+        const vehicle = await Vehicle.findOne({ _id: vehicleId, isAvailable: true });
+        if (!vehicle || !Vehicle.isAvailable) {
 
-            return res.status(400).send({ error: 'Car is not available.' });
+            return res.status(400).send({ error: 'Vehicle is not available.' });
         }
         const totalDays = Math.ceil((new Date(rentalEnd) - new Date(rentalStart)) / (1000 * 60 * 60 * 24));
 
-        const baseCost = totalDays * car.pricePerDay;
+        const baseCost = totalDays * Vehicle.pricePerDay;
         const rental = new Rental({
             userId: req.user._id,
-            carId,
+            vehicleId,
             rentalStart,
             rentalEnd,
             totalDays,
@@ -36,8 +36,8 @@ router.post('', authMiddleware, async (req, res) => {
         });
         await rental.save();
 
-        car.isAvailable = false;
-        await car.save();
+        Vehicle.isAvailable = false;
+        await Vehicle.save();
 
         const payment = new Payment({
             userId: req.user._id,
@@ -68,10 +68,10 @@ router.post('/:id/cancel', [authMiddleware], async (req, res) => {
         rental.status = 'cancelled';
         await rental.save();
 
-        const car = await Car.findById(rental.carId);
-        if (car) {
-            car.isAvailable = true;
-            await car.save();
+        const vehicle = await Vehicle.findById(rental.vehicleId);
+        if (vehicle) {
+            Vehicle.isAvailable = true;
+            await Vehicle.save();
         }
 
         res.send({ message: 'Rental cancelled successfully.' });
@@ -82,7 +82,7 @@ router.post('/:id/cancel', [authMiddleware], async (req, res) => {
 router.get('/history/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const rentals = await Rental.find({ userId }).populate('carId');
+        const rentals = await Rental.find({ userId }).populate('vehicleId');
         res.send(rentals);
     } catch (err) {
         res.status(500).send({ error: 'Failed to fetch rental history.' });

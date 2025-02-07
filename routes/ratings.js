@@ -2,17 +2,17 @@ import _ from 'lodash'
 import express from 'express'
 import { Product } from '../model/product.js'
 import authMiddleware from '../middleware/authMiddleware.js'
-import { Car, validateRating } from '../model/car.js'
+import { Vehicle, validateRating } from '../model/vehicle.js'
 
 const router = express.Router()
 
 router.get('/', async (req, res) => {
-    const { carId } = req.body
-    const cars = await Car.findById(carId).select('ratings rating numRating')
-    if (!cars) {
+    const { vehicleId } = req.body
+    const vehicles = await Vehicle.findById(vehicleId).select('ratings rating numRating')
+    if (!vehicles) {
         return res.status(400).send('Record not found!')
     }
-    res.send(cars)
+    res.send(vehicles)
 })
 
 router.post('/', authMiddleware, async (req, res) => {
@@ -24,39 +24,39 @@ router.post('/', authMiddleware, async (req, res) => {
         }))
         return res.status(422).send(errors)
     }
-    const { rating, comment, carId } = req.body
+    const { rating, comment, vehicleId } = req.body
 
-    const car = await Car.findById(carId)
-    if (!car) {
+    const vehicle = await Vehicle.findById(vehicleId)
+    if (!vehicle) {
         return res.status(400).send('Record not found!')
     }
-    const isRated = car.ratings.some(rating => rating.userId.toString() === req.user._id.toString())
+    const isRated = Vehicle.ratings.some(rating => rating.userId.toString() === req.user._id.toString())
 
     if (isRated) {
-        return res.send('Car rating added already!')
+        return res.send('Vehicle rating added already!')
     }
     const ratingObj = {
         userId: req.user._id,
         rating,
         comment,
     }
-    car.ratings.push(ratingObj)
-    car.numRating = car.ratings.length
-    car.rating = car.ratings.reduce((acc, item) => item.rating + acc, 0) /
-        car.ratings.length;
-    await car.save()
+    Vehicle.ratings.push(ratingObj)
+    Vehicle.numRating = Vehicle.ratings.length
+    Vehicle.rating = Vehicle.ratings.reduce((acc, item) => item.rating + acc, 0) /
+        Vehicle.ratings.length;
+    await Vehicle.save()
     res
-        .send(_.pick(car, ['_id', 'name']));
+        .send(_.pick(vehicle, ['_id', 'name']));
 })
 router.delete("/:id", authMiddleware, async (req, res) => {
-    const { carId } = req.body
+    const { vehicleId } = req.body
     const { id } = req.params
 
-    const car = await Car.findById(carId)
-    if (!car) {
+    const vehicle = await Vehicle.findById(vehicleId)
+    if (!vehicle) {
         return res.status(400).send('Record not found!')
     }
-    const userRating = car.ratings.some((rating) => {
+    const userRating = Vehicle.ratings.some((rating) => {
         if (req.user._id == rating.userId && rating._id == id) {
             return true
         }
@@ -65,12 +65,12 @@ router.delete("/:id", authMiddleware, async (req, res) => {
     if (!userRating) {
         return res.status(403).send('Access denied!')
     }
-    car.ratings.pull({ _id: id })
-    car.numRating = car.numRating - 1
-    car.rating = car.ratings.length > 0 ? (car.ratings.reduce((acc, item) => item.rating + acc, 0) /
-        car.ratings.length) : 0;
+    Vehicle.ratings.pull({ _id: id })
+    Vehicle.numRating = Vehicle.numRating - 1
+    Vehicle.rating = Vehicle.ratings.length > 0 ? (Vehicle.ratings.reduce((acc, item) => item.rating + acc, 0) /
+        Vehicle.ratings.length) : 0;
 
-    await car.save()
+    await Vehicle.save()
 
     res.send('Review deleted!')
 })

@@ -2,7 +2,7 @@ import express from 'express'
 import path, { dirname } from 'path'
 import multer from 'multer';
 import fs from 'fs'
-import { Car, validateCar } from "../model/car.js";
+import { Vehicle, validateVehicle } from "../model/vehicle.js";
 import authMiddleware from '../middleware/authMiddleware.js';
 import admin from '../middleware/admin.js';
 import { validateReview } from '../model/product.js';
@@ -40,13 +40,13 @@ const uploadHandle = upload.array('images', 4)
 
 router.get('/', async (req, res) => {
     try {
-        const cars = await Car.find({ isAvailable: true });
-        if (!cars) {
+        const vehicles = await Vehicle.find({ isAvailable: true });
+        if (!vehicles) {
             return res.status(404).send('No record found!')
         }
-        res.status(200).send(cars);
+        res.status(200).send(vehicles);
     } catch (err) {
-        res.status(500).send({ error: 'Failed to fetch cars.' });
+        res.status(500).send({ error: 'Failed to fetch vehicles.' });
     }
 });
 
@@ -58,7 +58,7 @@ router.post('/', [authMiddleware, admin], async (req, res) => {
         if (err) {
             return res.status(500).send('File upload failed')
         }
-        const { error } = validateCar(req.body)
+        const { error } = validateVehicle(req.body)
         if (error) {
             const errors = error.details.map(err => ({
                 message: err.message,
@@ -72,67 +72,67 @@ router.post('/', [authMiddleware, admin], async (req, res) => {
             return res.status(422).send(errors)
         }
         const { model, make, year, licensePlate, category, pricePerDay, features, description } = req.body
-        let carExists = await Car.findOne({ licensePlate })
-        if (carExists) {
-            return res.status(400).send('Car already exists!')
+        let vehicleExists = await Vehicle.findOne({ licensePlate })
+        if (vehicleExists) {
+            return res.status(400).send('Vehicle already exists!')
         }
 
-        let car = new Car({ model, make, year, licensePlate, category, pricePerDay, features, description });
+        let vehicle = new Vehicle({ model, make, year, licensePlate, category, pricePerDay, features, description });
 
-        await car.save();
+        await vehicle.save();
         req.files.forEach(file => {
-            car.images.push('/uploads/' + file.filename)
+            vehicle.images.push('/uploads/' + file.filename)
         })
-        await car.save()
-        res.status(201).send('Car created!')
+        await vehicle.save()
+        res.status(201).send('Vehicle created!')
     })
 });
 
 router.get('/:id', validateObjectID, async (req, res) => {
     try {
         const { id } = req.params;
-        const carExists = await Car.findById(id);
-        if (!carExists) {
+        const vehicleExists = await Vehicle.findById(id);
+        if (!vehicleExists) {
             return res.status(404).send({ error: 'Record not found.' });
         }
-        res.send(carExists).status(200);
+        res.send(vehicleExists).status(200);
     } catch (err) {
-        res.status(500).send({ error: 'Failed to update car.' });
+        res.status(500).send({ error: 'Failed to update Vehicle.' });
     }
 });
 
 router.put('/:id', validateObjectID, async (req, res) => {
     try {
         const { id } = req.params;
-        const updatedCar = await Car.findByIdAndUpdate(id, req.body, { new: true });
-        if (!updatedCar) return res.status(404).send({ error: 'Record not found.' });
-        res.send(updatedCar);
+        const updatedVehicle = await Vehicle.findByIdAndUpdate(id, req.body, { new: true });
+        if (!updatedVehicle) return res.status(404).send({ error: 'Record not found.' });
+        res.send(updatedVehicle);
     } catch (err) {
-        res.status(500).send({ error: 'Failed to update car.' });
+        res.status(500).send({ error: 'Failed to update Vehicle.' });
     }
 });
 
 router.post('/:id/make-available', validateObjectID, async (req, res) => {
     try {
         const { id } = req.params;
-        const updatedCar = await Car.findByIdAndUpdate(id, req.body, { new: true });
-        if (!updatedCar) return res.status(404).send({ error: 'Car not found.' });
-        res.send(updatedCar);
+        const updatedVehicle = await Vehicle.findByIdAndUpdate(id, req.body, { new: true });
+        if (!updatedVehicle) return res.status(404).send({ error: 'Vehicle not found.' });
+        res.send(updatedVehicle);
     } catch (err) {
-        res.status(500).send({ error: 'Failed to update car.' });
+        res.status(500).send({ error: 'Failed to update Vehicle.' });
     }
 })
 
 router.get('/:id/available-history', [authMiddleware, validateObjectID, admin], async (req, res) => {
     try {
         const { id } = req.params;
-        const car = await Car.findById(id).select('availabilityHistory');
-        if (!car) {
-            return res.status(404).send('Car not found');
+        const vehicle = await Vehicle.findById(id).select('availabilityHistory');
+        if (!vehicle) {
+            return res.status(404).send('Vehicle not found');
         }
-        res.send(car);
+        res.send(vehicle);
     } catch (err) {
-        res.status(500).send({ error: 'Failed to update car.' });
+        res.status(500).send({ error: 'Failed to update Vehicle.' });
     }
 })
 
@@ -140,34 +140,34 @@ router.post('/:id/available-history', [authMiddleware, validateObjectID, admin],
     try {
         const { id } = req.params;
         const { status, date } = req.body
-        const car = await Car.findById(id);
-        if (!car) {
-            return res.status(404).send('Car not found');
+        const vehicle = await Vehicle.findById(id);
+        if (!vehicle) {
+            return res.status(404).send('Vehicle not found');
         }
         const historyObj = {
             date: date ? date : (new Date()).toISOString(),
             status
         }
-        car.availabilityHistory.push(historyObj)
-        await car.save()
+        Vehicle.availabilityHistory.push(historyObj)
+        await Vehicle.save()
         res.send('Record updated!');
     } catch (err) {
-        res.status(500).send({ error: 'Failed to update car.' });
+        res.status(500).send({ error: 'Failed to update Vehicle.' });
     }
 })
 
 router.delete('/:id/available-history/:historyId', [authMiddleware, validateObjectID, admin], async (req, res) => {
     try {
         const { id, historyId } = req.params;
-        const car = await Car.findById(id);
-        if (!car) {
-            return res.status(404).send('Car not found');
+        const vehicle = await Vehicle.findById(id);
+        if (!vehicle) {
+            return res.status(404).send('Vehicle not found');
         }
-        car.availabilityHistory.pull({ _id: historyId })
-        await car.save()
+        Vehicle.availabilityHistory.pull({ _id: historyId })
+        await Vehicle.save()
         res.send('Record updated!');
     } catch (err) {
-        res.status(500).send({ error: 'Failed to update car.' });
+        res.status(500).send({ error: 'Failed to update Vehicle.' });
     }
 })
 
@@ -184,14 +184,14 @@ router.post('/:id/reviews', validateObjectID, async (req, res) => {
     const { _id } = req.user
     const { rating, comment } = req.body
 
-    const car = await Car.findById(id)
-    if (!car) {
+    const vehicle = await Vehicle.findById(id)
+    if (!vehicle) {
         return res.status(400).send('Record not found!')
     }
-    const isReviewed = car.reviews.some(review => review.user.toString() === req.user._id.toString())
+    const isReviewed = Vehicle.reviews.some(review => review.user.toString() === req.user._id.toString())
 
     if (isReviewed) {
-        return res.send('Car already reviewed!')
+        return res.send('Vehicle already reviewed!')
     }
     const review = {
         userId: _id,

@@ -11,7 +11,7 @@ import ratings from './routes/ratings.js'
 import payments from './routes/payments.js'
 import maintenances from './routes/maintenances.js'
 import auth from './routes/auth.js'
-import cars from './routes/cars.js'
+import vehicles from './routes/vehicles.js'
 import stripe from './routes/stripe.js'
 import webhooks from './routes/webhooks.js'
 import general from './routes/general.js'
@@ -49,7 +49,7 @@ app.use('/api/rental-bookings', rentalBooking)
 app.use('/api/rental-reviews', rentalReviews)
 app.use('/api/ratings', ratings)
 app.use('/api/maintenances', maintenances)
-app.use('/api/cars', cars)
+app.use('/api/vehicles', vehicles)
 app.use('/api', general)
 app.use('/api/stripe', stripe)
 app.use(validateObjectID)

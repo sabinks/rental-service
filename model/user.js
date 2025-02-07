@@ -23,13 +23,15 @@ const userSchema = new Schema({
         country: { type: String, default: 'Canada' },
     },
     preferences: {
-        preferredCarTypes: [{ type: String }],
+        preferredVehicleTypes: [{ type: String }],
         notificationEnabled: { type: Boolean, default: true },
     },
     resetToken: { type: String, default: '' },
     emailVerifiedAt: { type: String, default: null },
     isActive: { type: Boolean, default: false },
     verificationToken: { type: String, default: '' },
+    ipAddress: [{ ip: String, createdAt: Date }],
+    gpsLocation: [{ lat: String, long: String }]
 }, { timestamps: true });
 
 function validateUser(user) {
@@ -82,7 +84,7 @@ function validatProfileUpdate(userData) {
             zip: Joi.string().allow(''),
         }),
         preferences: Joi.object().keys({
-            preferredCarTypes: Joi.array().items(Joi.string()),
+            preferredVehicleTypes: Joi.array().items(Joi.string()),
             notificationEnabled: Joi.boolean()
         })
     })

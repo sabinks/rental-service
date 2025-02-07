@@ -3,7 +3,7 @@ import Joi from 'joi'
 import JoiObjectId from "joi-objectid";
 const myJoiObjectId = JoiObjectId(Joi);
 
-const carSchema = new Schema({
+const vehicleSchema = new Schema({
     make: { type: String, required: true, },
     model: { type: String, required: true },
     year: { type: String, required: true, },
@@ -36,7 +36,7 @@ const carSchema = new Schema({
     isAvailable: { type: Boolean, default: true },
 }, { timestamps: true });
 
-function validateCar(data) {
+function validateVehicle(data) {
     const schema = Joi.object({
         make: Joi.string().required(),
         model: Joi.string().required(),
@@ -50,7 +50,7 @@ function validateCar(data) {
 }
 function validateRating(data) {
     const schema = Joi.object({
-        carId: myJoiObjectId().required(),
+        vehicleId: myJoiObjectId().required(),
         rating: Joi.number().required(),
         comment: Joi.string().required(),
     })
@@ -58,7 +58,7 @@ function validateRating(data) {
 }
 function validateMaintenance(data) {
     const schema = Joi.object({
-        carId: myJoiObjectId().required(),
+        vehicleId: myJoiObjectId().required(),
         date: Joi.string().required(),
         details: Joi.string().required(),
         cost: Joi.number().required(),
@@ -66,6 +66,6 @@ function validateMaintenance(data) {
     return schema.validate(data, { abortEarly: false })
 }
 
-const Car = model('Car', carSchema)
+const Vehicle = model('Vehicle', vehicleSchema)
 
-export { Car, carSchema, validateCar, validateRating, validateMaintenance }
+export { Vehicle, vehicleSchema, validateVehicle, validateRating, validateMaintenance }

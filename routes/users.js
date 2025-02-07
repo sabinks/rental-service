@@ -119,13 +119,13 @@ router.post('/profile', authMiddleware, async (req, res) => {
         }))
         return res.status(422).send(errors)
     }
-    const { name: newName, phone, address: { street, city, state, zip }, preferences: { preferredCarTypes, notificationEnabled } } = req.body
+    const { name: newName, phone, address: { street, city, state, zip }, preferences: { preferredVehicleTypes, notificationEnabled } } = req.body
     const { _id, name } = req.user
     const user = await User.findOne({ _id, name })
     user.name = newName
     user.phone = phone
     user.set({ address: { street, city, state, zip } })
-    user.set({ preferences: { notificationEnabled, preferredCarTypes } })
+    user.set({ preferences: { notificationEnabled, preferredVehicleTypes } })
     await user.save()
     // const token = user.generateAuthToken()
     res

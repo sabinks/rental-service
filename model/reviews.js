@@ -4,7 +4,7 @@ import JoiObjectId from "joi-objectid";
 const myJoiObjectId = JoiObjectId(Joi);
 const reviewSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    carId: { type: Schema.Types.ObjectId, ref: 'Car', required: true },
+    vehicleId: { type: Schema.Types.ObjectId, ref: 'Vehicle', required: true },
     rentalId: { type: Schema.Types.ObjectId, ref: 'Rental', required: true },
     rating: { type: Number, required: true },
     comment: { type: String, required: true },

@@ -53,7 +53,7 @@ function validateProduct(product) {
 
 function validateReview(product) {
     const schema = Joi.object({
-        carId: myJoiObjectId().required(),
+        vehicleId: myJoiObjectId().required(),
         rating: Joi.number().required(),
         comment: Joi.string().required(),
     })

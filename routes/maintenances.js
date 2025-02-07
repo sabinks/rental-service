@@ -2,18 +2,18 @@ import _ from 'lodash'
 import express from 'express'
 import { Product } from '../model/product.js'
 import authMiddleware from '../middleware/authMiddleware.js'
-import { Car, validateMaintenance, validateRating } from '../model/car.js'
+import { Vehicle, validateMaintenance, validateRating } from '../model/vehicle.js'
 import admin from '../middleware/admin.js'
 
 const router = express.Router()
 
 router.get('/', async (req, res) => {
-    const { carId } = req.body
-    const cars = await Car.findById(carId).select('maintenance')
-    if (!cars) {
+    const { vehicleId } = req.body
+    const vehicles = await Vehicle.findById(vehicleId).select('maintenance')
+    if (!vehicles) {
         return res.status(400).send('Record not found!')
     }
-    res.send(cars)
+    res.send(vehicles)
 })
 
 router.post('/', [authMiddleware, admin], async (req, res) => {
@@ -25,31 +25,31 @@ router.post('/', [authMiddleware, admin], async (req, res) => {
         }))
         return res.status(422).send(errors)
     }
-    const { date, details, cost, carId } = req.body
+    const { date, details, cost, vehicleId } = req.body
 
-    const car = await Car.findById(carId)
-    if (!car) {
+    const vehicle = await Vehicle.findById(vehicleId)
+    if (!vehicle) {
         return res.status(400).send('Record not found!')
     }
     const maintenanceObj = {
         date, details, cost
     }
-    car.maintenance.push(maintenanceObj)
-    await car.save()
+    Vehicle.maintenance.push(maintenanceObj)
+    await Vehicle.save()
     res
-        .send(_.pick(car, ['_id', 'name']));
+        .send(_.pick(vehicle, ['_id', 'name']));
 })
 router.delete("/:id", [authMiddleware, admin], async (req, res) => {
-    const { carId } = req.body
+    const { vehicleId } = req.body
     const { id } = req.params
 
-    const car = await Car.findById(carId)
-    if (!car) {
+    const vehicle = await Vehicle.findById(vehicleId)
+    if (!vehicle) {
         return res.status(400).send('Record not found!')
     }
-    car.maintenance.pull({ _id: id })
+    Vehicle.maintenance.pull({ _id: id })
 
-    await car.save()
+    await Vehicle.save()
 
     res.send('Maintenance deleted!')
 })

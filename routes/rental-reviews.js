@@ -33,7 +33,7 @@ router.post('/', [authMiddleware, validate(validateRentalReview)], async (req, r
     const review = new Review({
         userId: req.user._id,
         rentalId,
-        carId: rental.carId,
+        vehicleId: rental.vehicleId,
         rating,
         comment
     })

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import supertest from "supertest";
 import server from '../index.js'
 import { Rental } from "../model/rental.js";
-import { Car } from "../model/car.js";
+import { Vehicle } from "../model/vehicle.js";
 import { User } from "../model/user.js";
 import { Payment } from "../model/payment.js";
 describe('/api/rental-booking', () => {
@@ -12,22 +12,22 @@ describe('/api/rental-booking', () => {
     let rental;
     let rentalNew;
     let rentalStart, rentalEnd;
-    let car;
+    let vehicle;
     let token;
     beforeEach(async () => {
         userId = new mongoose.Types.ObjectId()
         paymentId = new mongoose.Types.ObjectId()
-        car = await Car.findOne({ isAvailable: true })
+        vehicle = await Vehicle.findOne({ isAvailable: true })
         token = new User().generateAuthToken()
 
         rentalStart = '2025-01-20T00:00:00.000'
         rentalEnd = '2025-01-22T00:00:00.000'
         const totalDays = Math.ceil((new Date(rentalEnd) - new Date(rentalStart)) / (1000 * 60 * 60 * 24));
-        const baseCost = parseInt(totalDays) * car.pricePerDay;
+        const baseCost = parseInt(totalDays) * Vehicle.pricePerDay;
 
         rental = new Rental({
             userId, paymentId,
-            carId: car._id,
+            vehicleId: Vehicle._id,
             rentalStart,
             rentalEnd,
             totalDays,
@@ -40,11 +40,11 @@ describe('/api/rental-booking', () => {
     afterEach(async () => {
         await Rental.deleteOne({ _id: rental._id })
         if (rentalNew?._id) {
-            const car = await Car.findOne({ _id: rentalNew.carId })
+            const vehicle = await Vehicle.findOne({ _id: rentalNew.vehicleId })
             await Payment.deleteOne({ _id: rentalNew.paymentId })
             await Rental.deleteOne({ _id: rentalNew._id })
-            car.isAvailable = true
-            await car.save()
+            Vehicle.isAvailable = true
+            await Vehicle.save()
         }
     })
     it('should work!', async () => {
@@ -55,33 +55,33 @@ describe('/api/rental-booking', () => {
         const res = await supertest(server).post('/api/rental-bookings')
             // .set('x-auth-token', token)
             .send({
-                carId: car._id.toString(),
+                vehicleId: Vehicle._id.toString(),
                 rentalStart,
                 rentalEnd,
             })
         expect(res.status).toBe(401)
     });
-    it('should return 422 if carId, rentalStart or rentalEnd is not provided ', async () => {
-        const newCar = await Car.findById(car._id)
+    it('should return 422 if vehicleId, rentalStart or rentalEnd is not provided ', async () => {
+        const newVehicle = await Vehicle.findById(Vehicle._id)
 
         const res = await supertest(server).post('/api/rental-bookings')
             .set('x-auth-token', token)
             .send({
-                // carId: newCar._id.toString(),
+                // vehicleId: newVehicle._id.toString(),
                 // rentalStart,
                 // rentalEnd
             })
         expect(res.status).toBe(422)
     });
-    it('should return 400 if car not found or unavailable ', async () => {
-        const newCar = await Car.findOne({ isAvailable: true })
-        // newCar.isAvailable = false
-        await newCar.save()
+    it('should return 400 if vehicle not found or unavailable ', async () => {
+        const newVehicle = await Vehicle.findOne({ isAvailable: true })
+        // newVehicle.isAvailable = false
+        await newVehicle.save()
 
         const res = await supertest(server).post('/api/rental-bookings')
             .set('x-auth-token', token)
             .send({
-                carId: newCar._id,
+                vehicleId: newVehicle._id,
                 rentalStart,
                 rentalEnd
             })
@@ -93,7 +93,7 @@ describe('/api/rental-booking', () => {
         const res = await supertest(server).post('/api/rental-bookings')
             .set('x-auth-token', token)
             .send({
-                carId: car._id.toString(),
+                vehicleId: Vehicle._id.toString(),
                 rentalStart,
                 rentalEnd
             })
@@ -105,7 +105,7 @@ describe('/api/rental-booking', () => {
         const res = await supertest(server).post('/api/rental-bookings')
             .set('x-auth-token', token)
             .send({
-                carId: car._id.toString(),
+                vehicleId: Vehicle._id.toString(),
                 rentalStart,
                 rentalEnd
             })

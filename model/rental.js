@@ -6,7 +6,7 @@ import { Schema, model } from 'mongoose'
 const rentalSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     paymentId: { type: Schema.Types.ObjectId, ref: 'Payment', required: false },
-    carId: { type: Schema.Types.ObjectId, ref: 'Car', required: true },
+    vehicleId: { type: Schema.Types.ObjectId, ref: 'Vehicle', required: true },
     rentalStart: { type: Date, required: true },
     rentalEnd: { type: Date, required: true },
     totalDays: { type: Number },
@@ -25,7 +25,7 @@ const rentalSchema = new Schema({
 
 function validateRental(data) {
     const schema = Joi.object({
-        carId: myJoiObjectId().required(),
+        vehicleId: myJoiObjectId().required(),
         rentalStart: Joi.string().required(),
         rentalEnd: Joi.string().required(),
     })

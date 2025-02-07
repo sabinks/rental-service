@@ -35,7 +35,7 @@ async function processPayments() {
                             allow_redirects: 'never'
                         },
                         confirmation_token: confirmationTokenId, // the ConfirmationToken ID sent by your client
-                        description: `Payment Id: ${paymentId} & Car Rental Payment:${payment.rentalId} `,
+                        description: `Payment Id: ${paymentId} & Vehicle Rental Payment:${payment.rentalId} `,
 
                     });
                     // Save successful payment to DB
