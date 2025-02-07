@@ -4,15 +4,19 @@ import 'dotenv/config';
 import { createClient } from 'redis';
 import { Tracker } from '../model/tracker.js';
 import { Vehicle } from '../model/vehicle.js';
+
 const redisClient = createClient({
     url: process.env.REDIS_URL, // Example: "redis://localhost:6379"
 });
+
 redisClient.connect().then(() =>
     console.log("Redis connected")
 ).catch(err =>
     console.error("Redis Error:", err)
 );
+
 const router = express.Router()
+
 router.post('/:vehicleId', async (req, res) => {
     const { latitude, longitude } = req.body;
     const { vehicleId } = req.params
@@ -36,6 +40,7 @@ router.post('/:vehicleId', async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 });
+
 router.get("/geo-location/:vehicleId", async (req, res) => {
     const { vehicleId } = req.params;
     // return vehicleId
@@ -65,4 +70,5 @@ router.get("/geo-location/:vehicleId", async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 });
+
 export default router
