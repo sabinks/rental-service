@@ -1,0 +1,27 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Rental Service App
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{secrets.SSH_HOST}}
+          key: ${{secrets.SSH_KEY}}
+          username: ${{secrets.SSH_USERNAME}}
+
+          script: |
+            cd /var/www/rental-service/rental-service
+            git checkout .
+            git checkout master
+            git reset --hard origin/master
+            git pull
+            pm2 reload "rental-service-api"
+            pm2 reload "rental-service-tracker-api"
+            pm2 reload "rental-service-consumer"
+            echo 'Success'
