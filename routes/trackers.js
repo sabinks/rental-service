@@ -70,5 +70,8 @@ router.get("/geo-location/:vehicleId", async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 });
+router.get("/all-vehicles", async (req, res) => {
+    res.send(await Vehicle.find({}, { _id: 1 }).limit(3))
+});
 
 export default router
