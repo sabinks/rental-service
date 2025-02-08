@@ -21,6 +21,8 @@ jobs:
             git checkout master
             git reset --hard origin/master
             git pull
+            npm i
+            echo 'Start'
             pm2 reload "rental-service-api"
             pm2 reload "rental-service-tracker-api"
             pm2 reload "rental-service-consumer"
