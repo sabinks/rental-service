@@ -15,6 +15,7 @@ import vehicles from './routes/vehicles.js'
 import stripe from './routes/stripe.js'
 import webhooks from './routes/webhooks.js'
 import general from './routes/general.js'
+import s3Router from './routes/s3Routes.js'
 import authMiddleware from './middleware/authMiddleware.js'
 import errorMiddleware from './error.js'
 import validateObjectID from './middleware/validateObjectId.js'
@@ -32,6 +33,7 @@ const corsOptions = {
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify the allowed HTTP methods
 };
 app.use('/api/stripe/webhooks', webhooks)
+app.use('/api/s3', s3Router)
 app.use(cors(corsOptions));
 
 app.use(express.json())

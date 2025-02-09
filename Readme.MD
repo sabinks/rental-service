@@ -24,3 +24,19 @@ export express_jwtPrivateKey="ilovethissecretpasswordverymuch"
 
 - lsof -i tcp:3000
 - kill -9 <PID>
+
+# Running Rabbit MQ container
+
+- docker compose up -d
+
+# Running main application
+
+- node index.js
+
+# Running Consumer for Server side stripe payment
+
+- node consumer.js
+
+# Running Tracker for vehicle tracking
+
+- node tracker.js
